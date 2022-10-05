@@ -1,0 +1,73 @@
+service: sls-jest-demo-1
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  httpApi:
+    cors: true
+  environment:
+      DYNAMODB_TABLE: !Ref Table
+      EVENT_BRIDGE_NAME: !Ref EventBus
+      BUCKET_NAME: !Ref Bucket
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+          Resource: !GetAtt Table.Arn
+        - Effect: Allow
+          Action:
+            - events:PutEvents
+          Resource: !GetAtt EventBus.Arn
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+          Resource:
+            Fn::Join:
+              - ""
+              - - "arn:aws:s3:::"
+                - Ref: Bucket
+                - "/*"
+
+functions:
+  create-todo:
+    handler: src/functions/create-todo.handler
+    events:
+      - httpApi:
+          path: /todos
+          method: post
+
+  persist-event:
+    handler: src/functions/persist-event.handler
+    events:
+      - eventBridge:
+          eventBus: !GetAtt EventBus.Name
+          pattern:
+            detail-type:
+              - TodoCreated
+
+resources:
+  Resources:
+    Table:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+    Bucket:
+      Type: AWS::S3::Bucket
+
+    EventBus:
+      Type: AWS::Events::EventBus
+      Properties:
+        Name: ${self:service}-${sls:stage}
+
+plugins:
+  - serverless-plugin-typescript
