@@ -10,6 +10,7 @@ import { TodoCreatedEvent } from "../src/utils/events";
 
 jest.setTimeout(60000);
 
+// TODO: get the following parameters from the environment
 const API_URL = "https://1ayfmev0jc.execute-api.us-east-1.amazonaws.com";
 const DYNAMODB_TABLE = "sls-jest-demo-1-dev-Table-3QLBKHFY83NJ";
 const BUCKET_NAME = "sls-jest-demo-1-dev-bucket-sf8vzhm2kwn9";
@@ -21,11 +22,7 @@ beforeAll(async () => {
   // create a spy. This will also deploy the required infrastructure, if need be.
   spy = await eventBridgeSpy({
     eventBusName: EVENT_BRIDGE_NAME,
-    config: {
-      clientConfig: { region: "us-east-1" },
-      waitTimeSeconds: 2000,
-      matcherDefaultTimeout: 20_000,
-    },
+    config: {},
   });
 });
 
