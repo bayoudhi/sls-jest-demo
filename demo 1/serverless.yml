@@ -7,9 +7,9 @@ provider:
   httpApi:
     cors: true
   environment:
-      DYNAMODB_TABLE: !Ref Table
-      EVENT_BRIDGE_NAME: !Ref EventBus
-      BUCKET_NAME: !Ref Bucket
+    TABLE_NAME: !Ref Table
+    BUS_NAME: !Ref EventBus
+    BUCKET_NAME: !Ref Bucket
   iam:
     role:
       statements:
@@ -38,9 +38,8 @@ functions:
       - httpApi:
           path: /todos
           method: post
-
-  persist-event:
-    handler: src/functions/persist-event.handler
+  backup-todo:
+    handler: src/functions/backup-todo.handler
     events:
       - eventBridge:
           eventBus: !GetAtt EventBus.Name
@@ -60,14 +59,32 @@ resources:
           - AttributeName: id
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
-
     Bucket:
       Type: AWS::S3::Bucket
-
     EventBus:
       Type: AWS::Events::EventBus
       Properties:
         Name: ${self:service}-${sls:stage}
 
+  Outputs:
+    TableName:
+      Value: !Ref Table
+    BusName:
+      Value: !Ref EventBus
+    BucketName:
+      Value: !Ref Bucket
+
+custom:
+  exportOutputs:
+    include:
+      - TableName
+      - BusName
+      - BucketName
+      - HttpApiUrl
+    output:
+      file: tests/exports.json
+      format: json
+
 plugins:
   - serverless-plugin-typescript
+  - serverless-export-outputs

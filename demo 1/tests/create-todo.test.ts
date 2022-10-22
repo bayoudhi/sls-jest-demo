@@ -6,22 +6,16 @@ import {
   s3Object,
 } from "sls-jest";
 import { Todo } from "../src/types";
-import { TodoCreatedEvent } from "../src/utils/events";
+import { BucketName, BusName, HttpApiUrl, TableName } from "./exports.json";
 
 jest.setTimeout(60000);
-
-// TODO: get the following parameters from the environment
-const API_URL = "https://1ayfmev0jc.execute-api.us-east-1.amazonaws.com";
-const DYNAMODB_TABLE = "sls-jest-demo-1-dev-Table-3QLBKHFY83NJ";
-const BUCKET_NAME = "sls-jest-demo-1-dev-bucket-sf8vzhm2kwn9";
-const EVENT_BRIDGE_NAME = "sls-jest-demo-1-dev";
 
 let spy: EventBridgeSpy;
 
 beforeAll(async () => {
   // create a spy. This will also deploy the required infrastructure, if need be.
   spy = await eventBridgeSpy({
-    eventBusName: EVENT_BRIDGE_NAME,
+    eventBusName: BusName,
     config: {},
   });
 });
@@ -31,23 +25,24 @@ afterAll(async () => {
   await spy.stop();
 });
 
-it("should create a todo in dynamodb, send an event to eventbridge, and store a new event in s3", async () => {
-  const response = await axios.post(`${API_URL}/todos`, {
-    text: "Test Todo",
+it("should create a todo in dynamodb, send an event to eventbridge, and back it up in s3", async () => {
+  const response = await axios.post(`${HttpApiUrl}/todos`, {
+    text: "Watch a movie",
   });
-  const todo = response.data.todo as Todo;
-  const event = response.data.event as TodoCreatedEvent;
+
+  const todo = response.data as Todo;
 
   // check that the todo was created in dynamodb
   await expect(
     dynamodbItem({
+      tableName: TableName,
       key: { id: todo.id },
-      tableName: DYNAMODB_TABLE,
     })
   ).toExistAndMatchObject({
-    createdAt: todo.createdAt,
     id: todo.id,
-    text: "Test Todo",
+    text: "Watch a movie",
+    completed: false,
+    createdAt: todo.createdAt,
   });
 
   // check that the event was sent to eventbridge
@@ -56,15 +51,28 @@ it("should create a todo in dynamodb, send an event to eventbridge, and store a 
     detail: {
       payload: expect.objectContaining({
         id: todo.id,
+        text: "Watch a movie",
+        completed: false,
       }),
     },
   });
+  await expect(spy).toHaveEventMatchingObjectTimes(
+    {
+      "detail-type": "TodoCreated",
+    },
+    1
+  );
 
-  // check that the event was stored in S3
+  // check that the todo was stored in S3
   await expect(
     s3Object({
-      bucketName: BUCKET_NAME,
-      key: `${event.eventId}.json`,
+      bucketName: BucketName,
+      key: `${todo.id}.json`,
     })
-  ).toExistAndMatchObject(event as any);
+  ).toExistAndMatchObject({
+    id: todo.id,
+    text: "Watch a movie",
+    completed: false,
+    createdAt: expect.any(String),
+  });
 });
