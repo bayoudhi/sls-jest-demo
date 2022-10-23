@@ -1,4 +1,4 @@
-service: sls-jest-demo-1
+service: sls-jest-demo
 frameworkVersion: "3"
 
 provider:

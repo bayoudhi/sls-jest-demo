@@ -1,10 +1,10 @@
 {
-  "name": "sls-jest-demo-1",
+  "name": "sls-jest-demo",
   "version": "0.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "SLS_JEST_TAG=demo-1 jest",
+    "test": "SLS_JEST_TAG=demo jest",
     "deploy": "npx sls deploy"
   },
   "keywords": [],
