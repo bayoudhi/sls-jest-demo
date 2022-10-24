@@ -24,7 +24,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     })
     .promise();
 
-  const createTodoEvent: TodoCreatedEvent = {
+  const todoCreatedEvent: TodoCreatedEvent = {
     eventId: randomUUID(),
     eventType: "TodoCreated",
     payload: todo,
@@ -36,8 +36,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         {
           EventBusName: process.env.BUS_NAME,
           Source: "demo1",
-          DetailType: createTodoEvent.eventType,
-          Detail: JSON.stringify(createTodoEvent),
+          DetailType: todoCreatedEvent.eventType,
+          Detail: JSON.stringify(todoCreatedEvent),
         },
       ],
     })
