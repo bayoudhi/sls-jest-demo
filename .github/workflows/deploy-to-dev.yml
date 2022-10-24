@@ -33,3 +33,5 @@ jobs:
         run: npm run deploy
       - name: test
         run: SLS_JEST_TAG=dev npm run test
+      - name: destroy-test-stack
+        run: npx sls-jest destroy -t dev
