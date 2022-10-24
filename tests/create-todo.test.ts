@@ -16,7 +16,6 @@ beforeAll(async () => {
   // create a spy. This will also deploy the required infrastructure, if need be.
   spy = await eventBridgeSpy({
     eventBusName: BusName,
-    config: {},
   });
 });
 
