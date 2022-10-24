@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "SLS_JEST_TAG=demo jest",
+    "test": "jest",
     "deploy": "npx sls deploy"
   },
   "keywords": [],
