@@ -104,4 +104,3 @@ dist
 .tern-port
 
 .sls-jest
-tests/exports.json
