@@ -21,7 +21,7 @@ export function MyStack({ stack }: StackContext) {
 
   const api = new Api(stack, "api", {
     routes: {
-      "POST /todo": "functions/create-todo.handler",
+      "POST /todos": "functions/create-todo.handler",
     },
   });
 
@@ -31,5 +31,8 @@ export function MyStack({ stack }: StackContext) {
 
   stack.addOutputs({
     ApiEndpoint: api.url,
+    BucketName: bucket.bucketName,
+    BusName: bus.eventBusName,
+    TableName: table.tableName,
   });
 }
